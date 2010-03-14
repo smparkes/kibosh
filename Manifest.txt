@@ -1,0 +1,8 @@
+CHANGELOG.rdoc
+Manifest.txt
+README.rdoc
+Rakefile
+bin/kabosh
+lib/kabosh.rb
+lib/kabosh/kabosh.ru
+lib/kabosh/sinatra.rb

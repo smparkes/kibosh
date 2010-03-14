@@ -1,0 +1,12 @@
+#!/usr/bin/env ruby
+
+require 'rubygems'
+require 'thin'
+
+ru = File.expand_path( File.join( File.dirname( File.expand_path(__FILE__) ),
+                                   "..",
+                                   "lib",
+                                   "kabosh",
+                                   "kabosh.ru" ) )
+
+Thin::Runner.new(["-R", ru, "start"]).run!
