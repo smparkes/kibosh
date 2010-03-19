@@ -2,7 +2,6 @@
 
 require 'rubygems'
 require 'hoe'
-require './lib/kibosh.rb'
 
 Hoe.plugin :debugging, :doofus, :git
 Hoe.plugins.delete :rubyforge
