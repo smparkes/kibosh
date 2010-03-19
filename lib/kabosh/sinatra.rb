@@ -1,11 +1,5 @@
-require 'sinatra/base'
-
-module TestFlock; end
-
-class TestFlock::Sinatra < ::Sinatra::Base
-
-  get '/' do
-    "TestFlock::Sinatra"
+class Kabosh
+  def call env
+    [200, {"Content-Type" => "text/plain"}, ["Hello world!"]]
   end
-
 end

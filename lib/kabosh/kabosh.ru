@@ -1,7 +1,10 @@
 # -*- mode: ruby -*-
 
 require 'kabosh'
-require 'kabosh/sinatra'
 
-use Kabosh
-run Kabosh::Sinatra
+use Rack::Lint
+use Rack::CommonLogger
+use Rack::ShowExceptions
+use Rack::Reloader, 0
+
+run Kabosh.new
