@@ -1,8 +1,8 @@
-= Kabosh
+= Kibosh
 
-* http://github.com/smparkes/kabosh
-* http://groups.google.com/group/kabosh
-* #kabosh @ freenode
+* http://github.com/smparkes/kibosh
+* http://groups.google.com/group/kibosh
+* #kibosh @ freenode
 
 == Description
 

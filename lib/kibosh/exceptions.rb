@@ -1,6 +1,6 @@
-class Kabosh; end
+class Kibosh; end
 
-module Kabosh::Exceptions
+module Kibosh::Exceptions
   class Error < Exception; end
   class BadRequest < Exception; end
 end

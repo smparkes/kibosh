@@ -2,12 +2,12 @@
 
 require 'rubygems'
 require 'hoe'
-require './lib/kabosh.rb'
+require './lib/kibosh.rb'
 
 Hoe.plugin :debugging, :doofus, :git
 Hoe.plugins.delete :rubyforge
 
-Hoe.spec 'kabosh' do
+Hoe.spec 'kibosh' do
 
   developer 'Steven Parkes', 'smparkes@smparkes.net'
 

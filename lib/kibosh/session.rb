@@ -1,12 +1,12 @@
 require 'pp'
-require 'kabosh/exceptions'
-require 'kabosh/response'
+require 'kibosh/exceptions'
+require 'kibosh/response'
 
-class Kabosh;end
+class Kibosh;end
 
-class Kabosh::Session
+class Kibosh::Session
 
-  include Kabosh::Exceptions
+  include Kibosh::Exceptions
 
   AsyncResponse = [-1, {}, []].freeze
     
@@ -16,7 +16,7 @@ class Kabosh::Session
     raise "hell"
   end
 
-  class Response < Kabosh::Response
+  class Response < Kibosh::Response
   end
 
   def initialize request

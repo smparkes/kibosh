@@ -1,15 +1,15 @@
 require 'nokogiri'
 
-require 'kabosh/request'
+require 'kibosh/request'
 
-class Kabosh
+class Kibosh
   VERSION = '0.0.0'
 
   def call(env)
     req = Rack::Request.new env
     pp req
     return [400, {"Content-Type" => "text/plain"}, []] if !req.post?
-    Kabosh::Request.process(Nokogiri::XML::Document.parse(env["rack.input"].read))
+    Kibosh::Request.process(Nokogiri::XML::Document.parse(env["rack.input"].read))
   end
 
 end

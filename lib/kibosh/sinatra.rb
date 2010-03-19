@@ -1,4 +1,4 @@
-class Kabosh
+class Kibosh
   def call env
     [200, {"Content-Type" => "text/plain"}, ["Hello world!"]]
   end

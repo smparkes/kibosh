@@ -1,6 +1,6 @@
-class Kabosh; end
+class Kibosh; end
 
-class Kabosh::Response
+class Kibosh::Response
 
   def initialize session
     @content = session.content
