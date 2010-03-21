@@ -9,8 +9,6 @@ class Kibosh::Session
 
   include Kibosh::Exceptions
 
-  AsyncResponse = [-1, {}, []].freeze
-    
   attr_reader :sid, :content
 
   def self.find request
@@ -38,11 +36,32 @@ class Kibosh::Session
   end
 
   class Streams
+    def initialize session
+      @session = session
+    end
     def hash
       @hash ||= {}
     end
     def list
       @list ||= []
+    end
+    def [] key
+      case key
+      when Kibosh::Request
+        if key['to']
+          raise "implement new stream"
+        else
+          if key['stream'] || list.length != 1
+            self[ key['stream'] ]
+          else
+            list.first
+          end
+        end
+      else
+        stream = hash[key]
+        raise Error.new ItemNotFound, "no stream with id '#{key}'", @session if !stream
+        stream
+      end
     end
     def << stream
       raise "hell #{stream.id}" if hash[stream.id]
@@ -52,7 +71,7 @@ class Kibosh::Session
   end
 
   def streams
-    @streams ||= Streams.new
+    @streams ||= Streams.new self
   end
 
   module NewSessionResponse
@@ -91,8 +110,13 @@ class Kibosh::Session
     end
   end
 
-  def run request, response
-    raise "hell"
+
+  def handle request, response
+    if stream = streams[request]
+      stream.handle request, response
+    else
+      raise "hell: new stream"
+    end
   end
 
   def wait

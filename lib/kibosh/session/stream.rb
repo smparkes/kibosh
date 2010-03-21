@@ -6,10 +6,13 @@ class Kibosh::Session::Stream
 
   module Response
     def self.extended response
-      response.body["from"] = response.stream.from if response.stream.from
+      response.body["from"] = response.stream.from if response.stream.from && !response.stream.from_sent
+      response.body["secure"] = response.stream.secure if response.stream.secure && !response.stream.secure_sent
       response.body["stream"] = response.stream.id
     end
   end
+
+  attr_accessor :secure
 
   def initialize session, request, response
     @session = session
@@ -33,7 +36,7 @@ class Kibosh::Session::Stream
   end
 
   def body= body
-    raise "hell" if @body
+    raise "hell" if @body || !body.nil?
     @body = body
   end
 

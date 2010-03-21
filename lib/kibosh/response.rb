@@ -10,13 +10,13 @@ class Kibosh::Response
         raise "hell" if defer_fired || deliver_fired
         defer_fired = true
         v = [-1, {}, []].freeze
+        puts "[ defer"
       else 
         raise "hell" if deliver_fired
         deliver_fired = true
         v = [ status || 200, headers, xml ]
+        puts "[ #{v[2]}"
       end
-      # puts caller(0).join("\n")
-      require 'pp'; pp "[", v
       v
     end
 

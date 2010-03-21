@@ -108,6 +108,7 @@ class Kibosh::XMPP::Client::Connection < EM::Connection
           end
 
           add.call @stream.body, @current[:children]
+          @current = {:parent => nil, :parameters => nil, :children => []}
 
           @stream.ready!
         end

@@ -14,7 +14,7 @@ class Kibosh
   end
 
   def call(env)
-    Request.process(env,@sessions,@router)
+    Request.handle(env,@sessions,@router)
   end
 
 end

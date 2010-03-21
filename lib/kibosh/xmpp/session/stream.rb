@@ -33,10 +33,13 @@ class Kibosh::XMPP::Session::Stream < Kibosh::Session::Stream
       host = match[1]
       port = match[3] || 5222
       # p "***", response.body.to_xml
-      self.body = response.defer
+      raise "hell" if @body
+      @body = response.defer
       # p "!!!", self.body.to_xml
       EM::connect host, port, Kibosh::XMPP::Client::Connection, self,
-        lambda { |connection| },
+        lambda { |connection| 
+          @connection = connection
+        },
         lambda { |connection|
           self.body.extend(RemoteConnectionFailed)
           respond
@@ -47,6 +50,11 @@ class Kibosh::XMPP::Session::Stream < Kibosh::Session::Stream
       raise UndefinedCondition.new @session, "No Kibosh route for #{@to}"
     end
     response
+  end
+
+  def handle request, response
+    @connection.send_data request.body.inner_html
+    response.defer
   end
 
 end

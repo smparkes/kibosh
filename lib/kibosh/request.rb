@@ -12,7 +12,7 @@ class Kibosh::Request
 
   include Kibosh::Exceptions
 
-  def self.process env, sessions, router
+  def self.handle env, sessions, router
     request = Rack::Request.new env
     response = Kibosh::Response.new(env['async.callback'])
     begin
@@ -32,7 +32,7 @@ class Kibosh::Request
 
       puts "] #{doc.to_xml}"
       
-      new(doc,router).run(response, sessions)
+      new(doc,router).handle(response, sessions)
     rescue Error => e
       $stderr.puts e
       $stderr.puts e.backtrace.join("\n")
@@ -45,6 +45,8 @@ class Kibosh::Request
     response.rack
   end
   
+  attr_reader :body
+
   def initialize xml, router
     @body = xml.root
     @router = router
@@ -53,9 +55,9 @@ class Kibosh::Request
     end
   end
 
-  def run response, sessions
+  def handle response, sessions
     if sid = self["sid"]
-      response = sessions[sid].run(self, response)
+      response = (response.session = sessions[sid]).handle(self, response)
     else
       s = session.new self, response do |r|
         response = r
