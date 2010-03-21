@@ -1,37 +1,66 @@
-require 'kabosh/exceptions'
-require 'kabosh/session'
+require 'nokogiri'
 
-class Kabosh;end
+require 'kibosh/exceptions'
+require 'kibosh/session'
+require 'kibosh/xmpp/session'
 
-class Kabosh::Request
+class Kibosh;end
 
-  include Kabosh::Exceptions
+class Kibosh::Request
 
-  AsyncResponse = [-1, {}, []].freeze
-    
-  def self.process xml
-    new(xml).run
-  rescue BadRequest => e
-    [ 400, {"Content-Type" => "text/plain"}, [e.to_s] ]
-  rescue Error => e
-    [ 500, {"Content-Type" => "text/plain"}, [e.to_s] ]
+  Session = Kibosh::Session
+
+  include Kibosh::Exceptions
+
+  def self.process env, sessions, router
+    request = Rack::Request.new env
+    response = Kibosh::Response.new(env['async.callback'])
+    begin
+      raise Error.new BadRequest, "HTTP verb is not POST" if !request.post?
+
+      begin
+        xml = env["rack.input"].read
+      rescue Exception => e
+        raise Error.new BadRequest, "Could not fetch request data: " + e
+      end 
+
+      begin
+        doc = Nokogiri::XML::Document.parse(xml)
+      rescue Exception => e
+        raise Error.new BadRequest, "Could not parse XML: " + e
+      end
+
+      puts "] #{doc.to_xml}"
+      
+      new(doc,router).run(response, sessions)
+    rescue Error => e
+      $stderr.puts e
+      $stderr.puts e.backtrace.join("\n")
+      e.extend(response)
+    rescue Exception => e
+      $stderr.puts e
+      $stderr.puts e.backtrace.join("\n")
+      Error.new(UndefinedCondition, e.to_s).extend(response)
+    end
+    response.rack
   end
   
-  def initialize xml
+  def initialize xml, router
     @body = xml.root
+    @router = router
     if @body.node_name != "body"
-      raise BadRequest.new "root element is #{@body.node_name} not body"
+      raise Error.new BadRequest, "root element is #{@body.node_name} not body"
     end
-    pp @body
   end
 
-  def run
-    if self["sid"]
-      response = Kabosh::Session.find(sid).run(self)
+  def run response, sessions
+    if sid = self["sid"]
+      response = sessions[sid].run(self, response)
     else
-      Kabosh::Session.new self do |r|
+      s = session.new self, response do |r|
         response = r
       end
+      sessions << s
     end
     response
   end
@@ -40,6 +69,16 @@ class Kabosh::Request
     @body[s]
   end
 
+  def session
+    if @body.attribute_with_ns "version", "urn:xmpp:xbosh"
+      Kibosh::XMPP::Session
+    else
+      Kibosh::Session
+    end
+  end
+
+  def driver session, to, route
+    @router.driver session, to, route
+  end
+
 end
-
-

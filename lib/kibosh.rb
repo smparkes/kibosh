@@ -1,18 +1,20 @@
-require 'nokogiri'
-
+require 'kibosh/router'
+require 'kibosh/sessions'
 require 'kibosh/request'
+require 'kibosh/exceptions'
 
 class Kibosh
   VERSION = '0.0.0'
 
+  include Kibosh::Exceptions
+
+  def initialize options = {}
+    @router = Router.new options[:hosts]
+    @sessions = Sessions.new
+  end
+
   def call(env)
-    req = Rack::Request.new env
-    pp req
-    return [400, {"Content-Type" => "text/plain"}, []] if !req.post?
-    Kibosh::Request.process(Nokogiri::XML::Document.parse(env["rack.input"].read))
+    Request.process(env,@sessions,@router)
   end
 
 end
-
-
-
