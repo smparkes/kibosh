@@ -48,7 +48,7 @@ class Kibosh::Response
     end
 
     def xml
-      @body.to_xml :indent => 0, :indent_text => ""
+      @body.document.to_xml :save_with => 0
     end
 
   end
@@ -70,8 +70,10 @@ class Kibosh::Response
     raise "hell" if !Method === callback
     @callback = callback
     @fired = @deferred = false
+    @created_at = Time.now
   end
 
+  attr_reader :created_at
   attr_accessor :delivered, :deliver_fired, :defer_fired, :deferred
 
   def defer

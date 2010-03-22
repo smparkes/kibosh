@@ -22,4 +22,17 @@ class Kibosh::XMPP::Session < Kibosh::Session
     @version ||= client[:version]
   end
 
+  def handle request, response
+    restart = (attr = request.body.attribute_with_ns("restart",'urn:xmpp:xbosh')) && attr.value == "true"
+    if restart
+      to = request.body["to"]
+      request.body.remove_attribute "to"
+      stream = streams[request]
+      request.body["to"] = to if to
+      stream.restart request, response
+    else
+      super
+    end
+  end
+
 end

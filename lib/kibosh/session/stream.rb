@@ -1,9 +1,6 @@
 class Kibosh::Session; end
 class Kibosh::Session::Stream
   
-  attr_reader :to
-  attr_accessor :from
-
   module Response
     def self.extended response
       response.body["from"] = response.stream.from if response.stream.from && !response.stream.from_sent
@@ -12,16 +9,30 @@ class Kibosh::Session::Stream
     end
   end
 
-  attr_accessor :secure
+  attr_reader :to, :session, :route, :driver, :connection
+  attr_accessor :from, :secure
 
-  def initialize session, request, response
-    @session = session
-    @to = request["to"]
-    @route = request["route"]
-    @driver = request.driver @session, @to, @route
-    session.streams << self
-    response.stream = self
-    yield connect request, response.extend(Response)
+  def initialize object, request, response
+    case object
+    when Kibosh::Session::Stream
+      other = object
+      @session = other.session
+      @to = other.to
+      @route = other.route
+      @driver = other.driver
+      session.streams << self
+    when Kibosh::Session
+      session = object
+      @session = session
+      @to = request["to"]
+      @route = request["route"]
+      @driver = request.driver @session, @to, @route
+      session.streams << self
+      response.stream = self
+      yield connect request, response.extend(Response)
+    else
+      raise "hell"
+    end
   end
 
   def body
@@ -50,6 +61,15 @@ class Kibosh::Session::Stream
 
   def id
     @id ||= ('%16.16f' % rand)[2..-1]
+  end
+
+  def close
+    raise "implement"
+    abort
+  end
+
+  def abort
+    session.streams.delete self
   end
 
 end

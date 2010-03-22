@@ -68,6 +68,12 @@ class Kibosh::Session
       hash[stream.id] = stream
       list << stream
     end
+    def delete stream
+      raise "hell #{stream.id}" if !hash[stream.id]
+      raise "hell #{stream.id}" if !list.include? stream
+      hash.delete stream.id
+      list.delete stream
+    end
   end
 
   def streams
@@ -87,6 +93,8 @@ class Kibosh::Session
   end
 
   def initialize request, response
+    @timer = nil
+    @timer_fires_at = nil
     @responses = []
     @bodies = []
 
@@ -112,6 +120,7 @@ class Kibosh::Session
 
 
   def handle request, response
+    check_responses 1
     if stream = streams[request]
       stream.handle request, response
     else
@@ -120,7 +129,8 @@ class Kibosh::Session
   end
 
   def wait
-    @wait ||= !client[:wait] && 60 || [ client[:wait], 60 ].min
+    default = 60
+    @wait ||= !client[:wait] && default || [ client[:wait], default ].min
   end
 
   def ver
@@ -169,24 +179,71 @@ class Kibosh::Session
       # p "respond push"
       @bodies << body
     end
+    check_responses 0
     body
   end
 
   def defer response
-    # p "defer"
+    # puts "defer: now "
     raise "hell" if response.deliver_fired || response.deferred
     if body = @bodies.shift
       lock body
       response.body = body
     else
-      # p "defer push"
+      # puts "deferring: #{@responses.length}"
       response.deferred = true
       @responses << response
+      check_responses 0
     end
   end
 
   private
   
+  def check_responses expect
+    now = Time.now
+    ran = false
+    while @responses.first and
+          (@responses.length + expect > hold or
+           (@responses.first.created_at + wait) < now)
+      ran = true
+      deferred = @responses.shift
+      document = Nokogiri::XML::Document.new
+      deferred.body = body = document.create_element("body")
+      body["xmlns"] = 'http://jabber.org/protocol/httpbind'
+      document.root = body
+      deferred._deliver
+    end
+
+    fire_at = nil
+    if @responses.length > 0
+      fire_at = @responses.first.created_at + wait
+    end      
+
+    if @timer && (fire_at.nil? || @timer_fires_at > fire_at)
+      # if fire_at.nil?
+      #   puts "canceling timer"
+      # else
+      #   puts "canceling timer (would have fired in #{@timer_fires_at-Time.now})"
+      # end
+      @timer.cancel
+      @timer = nil
+    end
+
+    @timer_fires_at = fire_at
+
+    if fire_at
+      delta = fire_at - now
+      raise "hell" if delta <= 0
+      # puts "!!!!!!!!!!! timing out in #{delta}"
+      @timer = EM::Timer.new delta do
+        # puts "!!!!!!!!!!!! timer checking"
+        check_responses 0
+      end
+    # else
+    #   puts "no timer #{fire_at} #{@responses.length}"
+    end
+  end
+
   def client
     @client ||= {}
   end

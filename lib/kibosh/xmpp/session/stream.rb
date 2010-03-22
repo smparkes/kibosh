@@ -15,9 +15,17 @@ class Kibosh::XMPP::Session::Stream < Kibosh::Session::Stream
     @session.version
   end
 
-  def initialize session, request, response
-    super do |response|
-      yield response
+  def initialize object, request, response
+    case object
+    when Kibosh::XMPP::Session::Stream
+      other = object
+      super
+      response.stream = self
+      (@connection = other.connection).restart
+    when Kibosh::XMPP::Session
+      super { |response| yield response }
+    else
+      raise "hell"
     end
   end
 
@@ -52,9 +60,22 @@ class Kibosh::XMPP::Session::Stream < Kibosh::Session::Stream
     response
   end
 
+  def restart request, response
+    self.class.new self, request, response
+    self.abort
+    response.defer
+    response
+  end
+
   def handle request, response
     @connection.send_data request.body.inner_html
     response.defer
+    response
   end
 
 end
+
+
+
+
+

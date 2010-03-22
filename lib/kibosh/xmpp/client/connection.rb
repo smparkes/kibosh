@@ -96,7 +96,7 @@ class Kibosh::XMPP::Client::Connection < EM::Connection
                   node.namespace = nses[prefix]
                 end
                 attrs.each do |attr|
-                  raise attr.inspect
+                  node[attr.localname] = attr.value
                 end
                 ns_array.each do |pair|
                   node.add_namespace *pair
@@ -170,6 +170,10 @@ class Kibosh::XMPP::Client::Connection < EM::Connection
   def unbind
     @failure.call self if @failure
     @success = @failure = nil
+  end
+
+  def restart
+    connection_completed
   end
 
 end
