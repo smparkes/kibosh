@@ -14,7 +14,7 @@ class Kibosh::Request
 
   def self.handle env, sessions, router
     request = Rack::Request.new env
-    response = Kibosh::Response.new(env['async.callback'])
+    response = Kibosh::Response.new(env['async.callback'], env['async.close'])
     begin
       raise Error.new BadRequest, "HTTP verb is not POST" if !request.post?
 

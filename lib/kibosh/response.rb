@@ -66,9 +66,11 @@ class Kibosh::Response
     @session = session
   end
 
-  def initialize callback
-    raise "hell" if !Method === callback
-    @callback = callback
+  def initialize async_callback, close_callback
+    raise "hell" if !Method === async_callback
+    @callback = async_callback
+    @closed = close_callback
+    @callback.receiver.comm_inactivity_timeout = 0
     @fired = @deferred = false
     @created_at = Time.now
   end
@@ -83,11 +85,24 @@ class Kibosh::Response
     body
   end
 
-  def _deliver
+  def on_close &block
+    @closed.callback &(@close_block = block)
+  end
+
+  def _cancel!
     raise "hell" if delivered || !deferred
     self.deferred = false
-    @callback.call rack
+    @callback.call nil
+    self.delivered = true
+    @closed = nil
     @callback = nil
+  end
+
+  def _deliver
+    raise "hell" if delivered || !deferred
+    @closed.cancel_callback @close_block
+    self.deferred = false
+    @callback.call rack
   end
 
 end

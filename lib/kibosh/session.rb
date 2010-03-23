@@ -192,6 +192,11 @@ class Kibosh::Session
     else
       # puts "deferring: #{@responses.length}"
       response.deferred = true
+      response.on_close do
+        response._cancel!
+        @responses.delete response
+        check_responses 0
+      end
       @responses << response
       check_responses 0
     end
@@ -200,6 +205,8 @@ class Kibosh::Session
   private
   
   def check_responses expect
+    wait = self.wait
+    # wait = 15
     now = Time.now
     ran = false
     while @responses.first and
