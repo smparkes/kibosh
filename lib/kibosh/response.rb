@@ -75,7 +75,6 @@ class Kibosh::Response
     raise "hell" if !Method === async_callback
     @callback = async_callback
     @closed = close_callback
-    puts  @callback.receiver.backend.class
     @callback.receiver.comm_inactivity_timeout = 0
     @fired = @deferred = false
     @created_at = Time.now
