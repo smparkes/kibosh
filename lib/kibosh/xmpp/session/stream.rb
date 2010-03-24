@@ -21,7 +21,7 @@ class Kibosh::XMPP::Session::Stream < Kibosh::Session::Stream
       other = object
       super
       response.stream = self
-      (@connection = other.connection).restart
+      (@connection = other.connection).restart self
     when Kibosh::XMPP::Session
       super { |response| yield response }
     else
@@ -69,13 +69,20 @@ class Kibosh::XMPP::Session::Stream < Kibosh::Session::Stream
 
   def handle request, response
     @connection.send_data request.body.inner_html
-    response.defer
-    response
+    if request.body["type"] == "terminate"
+      @connection.terminate
+      terminate request, response
+    else
+      response.defer
+      response
+    end
+  end
+
+  def ready!
+    if @body["type"] == "terminate" and @body["condition"] == "remote-stream-error"
+      terminate!
+    end
+    super
   end
 
 end
-
-
-
-
-

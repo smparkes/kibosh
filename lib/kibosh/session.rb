@@ -39,6 +39,9 @@ class Kibosh::Session
     def initialize session
       @session = session
     end
+    def stop
+      @list.each { |stream| stream.stop }
+    end
     def hash
       @hash ||= {}
     end
@@ -166,6 +169,10 @@ class Kibosh::Session
   def charsets
   end
 
+  def stop
+    streams.stop
+  end
+
   def respond body
     # p "respond"
     raise "hell" if !body
@@ -240,7 +247,7 @@ class Kibosh::Session
 
     if fire_at
       delta = fire_at - now
-      raise "hell" if delta <= 0
+      raise "hell #{delta}" if delta <= 0
       # puts "!!!!!!!!!!! timing out in #{delta}"
       @timer = EM::Timer.new delta do
         # puts "!!!!!!!!!!!! timer checking"

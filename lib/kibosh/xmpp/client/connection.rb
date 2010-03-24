@@ -17,8 +17,9 @@ class Kibosh::XMPP::Client::Connection < EM::Connection
   class StreamParser < Nokogiri::XML::SAX::PushParser
 
     class Document < Nokogiri::XML::SAX::Document
-      def initialize stream, success, failure
+      def initialize connection, stream, success, failure
         super()
+        @connection = connection
         @stream = stream
         @success = success
         @failure = failure
@@ -53,19 +54,18 @@ class Kibosh::XMPP::Client::Connection < EM::Connection
         end
       end
 
-      def end_element name
+      def end_element_namespace name, prefix = nil, uri = nil
         @current = @current[:parent]
         if @current == nil 
           # should be EOS
-          raise "#{name}"
+          raise "hell: #{name} #{prefix} #{uri}" if name != "stream" or uri != "http://etherx.jabber.org/streams"
+          @connection.close
         elsif @current[:parent] == nil
 
           # require 'pp'; pp @current
 
           body = @stream.body
           document = body.document
-
-          # pp document
 
           add = lambda do |parent, children|
             children.each do |child|
@@ -108,6 +108,23 @@ class Kibosh::XMPP::Client::Connection < EM::Connection
           end
 
           add.call @stream.body, @current[:children]
+
+          last = @current[:children].last[:parameters]
+          if last[0] == "error"
+            # p "last", last
+            # p body.to_xml
+            name, attrs, prefix, uri, ns_array = last
+            # p ns_array
+            if name == "error" and uri == "http://etherx.jabber.org/streams"
+              # FIX: the exception classes expect responses, not bodies
+              body["type"] = "terminate"
+              body["condition"] = "remote-stream-error"
+              # p body.to_xml
+            end
+          end
+
+          # pp document
+
           @current = {:parent => nil, :parameters => nil, :children => []}
 
           @stream.ready!
@@ -132,8 +149,8 @@ class Kibosh::XMPP::Client::Connection < EM::Connection
 
     end
 
-    def initialize stream, success, failure
-      super Document.new( stream, success, failure), nil, "UTF-8"
+    def initialize connection, stream, success, failure
+      super Document.new( connection, stream, success, failure), nil, "UTF-8"
     end
   end
 
@@ -150,7 +167,7 @@ class Kibosh::XMPP::Client::Connection < EM::Connection
     prefix = stream_element[0..midway-1]
     puts "> #{prefix}"
     @suffix = stream_element[midway+1..-1]
-    @parser = StreamParser.new @stream, lambda { |attributes|
+    @parser = StreamParser.new self, @stream, lambda { |attributes|
       @stream.xmpp_id = attributes["id"]
       @stream.from = attributes["from"]
       @success.call self if @success
@@ -172,8 +189,19 @@ class Kibosh::XMPP::Client::Connection < EM::Connection
     @success = @failure = nil
   end
 
-  def restart
+  def restart stream
+    @stream = stream
     connection_completed
+  end
+
+  def terminate
+    close
+  end
+
+  def close
+    puts "> #{@suffix}"
+    send_data @suffix
+    close_connection_after_writing
   end
 
 end

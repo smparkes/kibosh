@@ -35,6 +35,13 @@ class Kibosh::Session::Stream
     end
   end
 
+  def stop
+    # FIX
+    body["type"] = "terminate"
+    body["condition"] = "system-shutdown"
+    respond
+  end
+
   def body
     @body ||=
       begin
@@ -57,6 +64,20 @@ class Kibosh::Session::Stream
 
   def ready!
     respond
+  end
+
+  def terminate request, response
+    document = Nokogiri::XML::Document.new
+    body = document.create_element("body")
+    body["xmlns"] = 'http://jabber.org/protocol/httpbind'
+    # body["stream"] = id (?)
+    response.body = document.root = body
+    abort
+    response
+  end
+
+  def terminate!
+    abort
   end
 
   def id

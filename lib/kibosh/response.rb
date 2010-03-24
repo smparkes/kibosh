@@ -13,6 +13,11 @@ class Kibosh::Response
         puts "[ defer"
       else 
         raise "hell" if deliver_fired
+        if @body["type"] == "terminate"
+          @callback.receiver.instance_eval do
+            @can_persist = false
+          end
+        end
         deliver_fired = true
         v = [ status || 200, headers, xml ]
         puts "[ #{v[2]}"
@@ -70,6 +75,7 @@ class Kibosh::Response
     raise "hell" if !Method === async_callback
     @callback = async_callback
     @closed = close_callback
+    puts  @callback.receiver.backend.class
     @callback.receiver.comm_inactivity_timeout = 0
     @fired = @deferred = false
     @created_at = Time.now

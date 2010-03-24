@@ -10,10 +10,10 @@ class Kibosh
 
   def initialize options = {}
     @router = Router.new options[:hosts]
-    @sessions = Sessions.new
   end
 
   def call(env)
+    @sessions ||= Sessions.new(env)
     Request.handle(env,@sessions,@router)
   end
 

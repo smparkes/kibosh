@@ -63,6 +63,11 @@ module Kibosh::Exceptions
     def self.condition; "remote-connection-failed"; end
   end
 
+  module RemoteStreamError
+    include Terminal
+    def self.condition; "remote-stream-error"; end
+  end
+
   module UndefinedCondition
     include Terminal
     def self.condition; "undefined-condition"; end
