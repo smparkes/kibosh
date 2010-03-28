@@ -24,10 +24,17 @@ module Kibosh::Exceptions
 
   module Terminal
     def self.included other
-      (class << other; self; end).send :define_method, :extended do |response|
-        response.body["type"] = "terminate"
-        response.body["condition"] = condition
-        response.status ||= respond_to?(:status) ? status : nil
+      (class << other; self; end).send :define_method, :extended do |object|
+        body = reponse = nil
+        if Kibosh::Response === object
+          reponse = object
+          body = response.body
+        else
+          body = object
+        end
+        body["type"] = "terminate"
+        body["condition"] = condition
+        reponse and response.status ||= respond_to?(:status) ? status : nil
       end
     end
   end

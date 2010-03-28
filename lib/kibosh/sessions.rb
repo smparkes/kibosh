@@ -4,8 +4,6 @@ class Kibosh::Sessions
 
   def initialize env
 
-    EM.tick_loop {} # workound EM issue
-
     class << env['async.callback'].receiver.backend
       def stop
         @stop_callback.call if @stop_callback
