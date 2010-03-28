@@ -62,7 +62,7 @@ class Kibosh::Session
         end
       else
         stream = hash[key]
-        raise Error.new ItemNotFound, "no stream with id '#{key}'", @session if !stream
+        raise Kibosh::Error.new ItemNotFound, "no stream with id '#{key}'", @session if !stream
         stream
       end
     end
@@ -218,7 +218,7 @@ class Kibosh::Session
     ran = false
     while @responses.first and
           (@responses.length + expect > hold or
-           (@responses.first.created_at + wait) < now)
+           (@responses.first.created_at + wait) <= now)
       ran = true
       deferred = @responses.shift
       document = Nokogiri::XML::Document.new
@@ -247,7 +247,7 @@ class Kibosh::Session
 
     if fire_at
       delta = fire_at - now
-      raise "hell #{delta}" if delta <= 0
+      raise "hell #{delta} #{@responses.first} #{@responses.first && @responses.first.created_at}" if delta <= 0
       # puts "!!!!!!!!!!! timing out in #{delta}"
       @timer = EM::Timer.new delta do
         # puts "!!!!!!!!!!!! timer checking"

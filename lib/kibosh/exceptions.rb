@@ -25,16 +25,16 @@ module Kibosh::Exceptions
   module Terminal
     def self.included other
       (class << other; self; end).send :define_method, :extended do |object|
-        body = reponse = nil
+        body = response = nil
         if Kibosh::Response === object
-          reponse = object
+          response = object
           body = response.body
         else
           body = object
         end
         body["type"] = "terminate"
         body["condition"] = condition
-        reponse and response.status ||= respond_to?(:status) ? status : nil
+        response and response.status ||= respond_to?(:status) ? status : nil
       end
     end
   end
