@@ -36,6 +36,8 @@ class Kibosh::Session
   end
 
   class Streams
+    include Kibosh::Exceptions
+
     def initialize session
       @session = session
     end
