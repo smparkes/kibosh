@@ -58,6 +58,12 @@ class Kibosh::Session::Stream
     @body = body
   end
 
+  def lock body
+    if body.object_id == @body.object_id
+      @body = nil
+    end
+  end
+
   def respond
     @body = @session.respond @body
   end

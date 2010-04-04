@@ -196,7 +196,7 @@ class Kibosh::Session
     # puts "defer: now "
     raise "hell" if response.deliver_fired || response.deferred
     if body = @bodies.shift
-      lock body
+      streams[body["stream"]].lock body
       response.body = body
     else
       # puts "deferring: #{@responses.length}"
