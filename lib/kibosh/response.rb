@@ -48,12 +48,17 @@ class Kibosh::Response
           document = Nokogiri::XML::Document.new
           body = document.create_element("body")
           body.attributes.merge! :xmlns => 'http://jabber.org/protocol/httpbind'
+          # puts "new body #{body.object_id}"
           document.root = body
         end
     end
 
     def xml
-      @body.document.to_xml :save_with => 0
+      # puts "sending resp #{self.object_id} body #{@body.object_id}"
+      v = @body.document.to_xml :save_with => 0
+      # @body["sent"] = "true"
+      # puts "sent #{@body}"
+      v
     end
 
   end

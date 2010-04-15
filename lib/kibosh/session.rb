@@ -179,14 +179,16 @@ class Kibosh::Session
     # p "respond"
     raise "hell" if !body
     if response = @responses.shift
-      # p "respond pop"
+      # puts "response pop #{response.object_id} #{body.object_id}"
       raise "hell" if !response.deferred || response.delivered
       response.body = body
       response._deliver
       body = nil
     else
-      # p "respond push"
-      @bodies << body
+      raise "hell" if !body
+      # puts "body push #{body.object_id} #{@bodies.length}"
+      # puts caller(0)
+      @bodies << body unless @bodies.include? body
     end
     check_responses 0
     body
@@ -195,17 +197,21 @@ class Kibosh::Session
   def defer response
     # puts "defer: now "
     raise "hell" if response.deliver_fired || response.deferred
+    # puts "b4 #{@bodies.length}"
     if body = @bodies.shift
+      # puts "body pop #{body.object_id}"
       streams[body["stream"]].lock body
       response.body = body
     else
-      # puts "deferring: #{@responses.length}"
+      # puts "deferring: #{@responses.length} #{response.object_id} #{@bodies.length}"
       response.deferred = true
       response.on_close do
         response._cancel!
+        # puts "response del #{response.object_id}"
         @responses.delete response
         check_responses 0
       end
+      # puts "response push #{response.object_id}"
       @responses << response
       check_responses 0
     end
@@ -223,6 +229,7 @@ class Kibosh::Session
            (@responses.first.created_at + wait) <= now)
       ran = true
       deferred = @responses.shift
+      # puts "response pop #{deferred.object_id}"
       document = Nokogiri::XML::Document.new
       deferred.body = body = document.create_element("body")
       body["xmlns"] = 'http://jabber.org/protocol/httpbind'

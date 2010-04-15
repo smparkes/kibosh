@@ -47,20 +47,30 @@ class Kibosh::Session::Stream
       begin
         document = Nokogiri::XML::Document.new
         body = document.create_element("body")
+        # puts "new body #{body.object_id}"
         body["xmlns"] = 'http://jabber.org/protocol/httpbind'
         body["stream"] = id
         document.root = body
       end
+    # puts "current body #{@body.object_id}"
+    # raise "hell" if @body["sent"]
+    @body
   end
 
   def body= body
     raise "hell" if @body || !body.nil?
+    # puts "set body #{body.object_id}"
     @body = body
   end
 
   def lock body
+    # puts "lock? #{body.object_id} #{@body.object_id} (#{body['sent']})"
+    # raise "hell" if body['sent']
     if body.object_id == @body.object_id
+      # puts "locking #{@body}"
       @body = nil
+    else
+      # puts "not locking #{@body}"
     end
   end
 
