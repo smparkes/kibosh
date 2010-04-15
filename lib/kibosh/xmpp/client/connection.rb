@@ -165,7 +165,7 @@ class Kibosh::XMPP::Client::Connection < EM::Connection
     end.to_xml :indent => 0
     midway = stream_element.index "*"
     prefix = stream_element[0..midway-1]
-    puts "> #{prefix}"
+    puts "> (prefix) #{prefix}"
     @suffix = stream_element[midway+1..-1]
     @parser = StreamParser.new self, @stream, lambda { |attributes|
       @stream.xmpp_id = attributes["id"]

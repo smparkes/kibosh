@@ -68,8 +68,10 @@ class Kibosh::XMPP::Session::Stream < Kibosh::Session::Stream
   end
 
   def handle request, response
-    puts "> #{request.body.inner_html}"
-    @connection.send_data request.body.inner_html
+    if request.body.inner_html && request.body.inner_html != ""
+      puts "> #{request.body.inner_html}"
+      @connection.send_data request.body.inner_html
+    end
     if request.body["type"] == "terminate"
       @connection.terminate
       terminate request, response
