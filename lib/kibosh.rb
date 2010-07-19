@@ -4,7 +4,7 @@ require 'kibosh/request'
 require 'kibosh/exceptions'
 
 class Kibosh
-  VERSION = '0.0.0'
+  VERSION = '0.1.0'
 
   include Kibosh::Exceptions
 

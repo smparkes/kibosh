@@ -8,6 +8,13 @@ lib/kibosh/exceptions.rb
 lib/kibosh/kibosh.ru
 lib/kibosh/request.rb
 lib/kibosh/response.rb
+lib/kibosh/router.rb
 lib/kibosh/session.rb
+lib/kibosh/session/stream.rb
+lib/kibosh/sessions.rb
 lib/kibosh/sinatra.rb
 lib/kibosh/xmpp.rb
+lib/kibosh/xmpp/client/connection.rb
+lib/kibosh/xmpp/connection/client.rb
+lib/kibosh/xmpp/session.rb
+lib/kibosh/xmpp/session/stream.rb

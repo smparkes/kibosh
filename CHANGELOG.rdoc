@@ -1,3 +1,7 @@
+=== 0.0.1 / 2010-07-19
+
+* First alpha-ish release; works with ChessFlock
+
 === 0.0.0 / 2010-03-12
 
 * Birthday! (recognized)

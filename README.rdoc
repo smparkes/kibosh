@@ -10,7 +10,9 @@ An XMPP BOSH connection manager, written in Ruby with EventMachine and
 usable as both a standalone connection manager and as part of a rack
 app (at least with Thin).
 
-Not yet released.
+Currently in an alpha-ish state. Has been used in a fair amount of
+testing, but not in production. ChessFlock
+(http://github.com/smparkes/chessflock) is the current client app.
 
 == License
 
