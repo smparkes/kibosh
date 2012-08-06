@@ -1,8 +1,6 @@
 = Kibosh
 
 * http://github.com/smparkes/kibosh
-* http://groups.google.com/group/kibosh
-* #kibosh @ freenode
 
 == Description
 
